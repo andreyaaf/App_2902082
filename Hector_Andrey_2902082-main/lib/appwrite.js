@@ -8,7 +8,7 @@ import {
   Storage,
 } from "react-native-appwrite";
 
-export const confing = {
+export const config = {
   endpoint: "https://cloud.appwrite.io/v1",
   platform: "co.edu.sena",
   projectId: "66e779d4003265693577",
@@ -40,15 +40,15 @@ export async function createUser(email, password, username) {
       username
     );
 
-    if (!newAccount) throw Error;
+    if (!newAccount) throw new Error("Account creation failed");
 
     const avatarUrl = avatars.getInitials(username);
 
     await signIn(email, password);
 
     const newUser = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
+      config.databaseId,
+      config.userCollectionId,
       ID.unique(),
       {
         accountId: newAccount.$id,
@@ -60,7 +60,7 @@ export async function createUser(email, password, username) {
 
     return newUser;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message); // Muestra el mensaje de error
   }
 }
 
@@ -71,7 +71,7 @@ export async function signIn(email, password) {
 
     return session;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message); // Muestra el mensaje de error
   }
 }
 
@@ -82,7 +82,7 @@ export async function getAccount() {
 
     return currentAccount;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message); // Muestra el mensaje de error
   }
 }
 
@@ -90,19 +90,19 @@ export async function getAccount() {
 export async function getCurrentUser() {
   try {
     const currentAccount = await getAccount();
-    if (!currentAccount) throw Error;
+    if (!currentAccount) throw new Error("No account found");
 
     const currentUser = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
+      config.databaseId,
+      config.userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
 
-    if (!currentUser) throw Error;
+    if (!currentUser || currentUser.documents.length === 0) throw new Error("No user found");
 
     return currentUser.documents[0];
   } catch (error) {
-    console.log(error);
+    console.log(error.message); // Muestra el mensaje de error
     return null;
   }
 }
@@ -114,6 +114,6 @@ export async function signOut() {
 
     return session;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message); // Muestra el mensaje de error
   }
 }
